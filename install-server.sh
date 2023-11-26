@@ -6,23 +6,38 @@ fi
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-SERVER_DIRECTORY=${1}
+SERVER_DIRECTORY=/home/steam/miscreated
+THIS_USER=steam
 
-if [[ "$SERVER_DIRECTORY" == "" ]]; then
-  SERVER_DIRECTORY=/home/steam/miscreated
-fi
+# Parse the command line arguments
+while [ "$1" != "" ]; do
+    case $1 in
+        -directory=*)
+            SERVER_DIRECTORY="${1#*=}"
+            ;;
+        -user=*)
+            THIS_USER="${1#*=}"
+            ;;
+        *)
+            ;;
+    esac
+    shift
+done
+
+THIS_USER_DIR=$(getent passwd ${THIS_USER} | cut -d: -f6)
+THIS_USER_GROUP=$(id -gn ${THIS_USER})
 
 mkdir -p "${SERVER_DIRECTORY}" 2>/dev/null
-chown steam: "${SERVER_DIRECTORY}"
-sudo -i -u steam bash << EOF
-mkdir -p /home/steam/.steam 2>/dev/null
+chown ${THIS_USER}: "${SERVER_DIRECTORY}"
+sudo -i -u ${THIS_USER} bash << EOF
+mkdir -p ${THIS_USER_DIR}/.steam 2>/dev/null
 export WINEDLLOVERRIDES="mscoree,mshtml="
 xvfb-run wineboot -u
 /usr/games/steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir "${SERVER_DIRECTORY}" +login anonymous +app_update 302200 validate +quit
 EOF
 
 if [ ! -f "${SERVER_DIRECTORY}/hosting.cfg" ]; then
-  install -m 644 -g steam -o steam "${SCRIPT_DIR}/hosting.cfg" "${SERVER_DIRECTORY}/hosting.cfg"
+  install -m 644 -g ${THIS_USER_GROUP} -o ${THIS_USER} "${SCRIPT_DIR}/hosting.cfg" "${SERVER_DIRECTORY}/hosting.cfg"
   echo -e "\n\n"
 
   echo -n "Enter a server name - [My Miscreated Server]: "

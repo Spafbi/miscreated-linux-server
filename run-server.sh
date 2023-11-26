@@ -56,7 +56,7 @@ done
 EOF
 chown ${THIS_USER}: ${TEMPFILE}
 chmod +x ${TEMPFILE}
-# sudo -u ${THIS_USER} -- bash -c "screen -AR -U -S ${SCREEN_NAME} -t ${TITLE_NAME} bash -c ${TEMPFILE}"
+
 sudo -u ${THIS_USER} -- bash -c "[ \$(screen -ls|grep ${SCREEN_NAME} -c) -eq 0 ] && screen -dmS ${SCREEN_NAME}"
 sudo -u ${THIS_USER} -- bash -c "screen -S ${SCREEN_NAME} -X screen -t ${TITLE_NAME}"
 sudo -u ${THIS_USER} -- bash -c "screen -S ${SCREEN_NAME} -p ${TITLE_NAME} -X stuff '${TEMPFILE}\n'"
